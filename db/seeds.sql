@@ -15,7 +15,7 @@ VALUES ("Engineer Manager", 120000, 1),
     ("Vice President", 180000, 5);
 
 -- info for employee
-INSERT INTO employee (first_name, last_name, role_id, manager_id)
+INSERT INTO employees (first_name, last_name, role_id, manager_id)
 VALUES ("Snow", "White", 1, NULL),
     ("Cinder", "Ella", 2, 5),
     ("Aurora", "Sleeps", 3, 5),
