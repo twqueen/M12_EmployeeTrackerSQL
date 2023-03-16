@@ -1,14 +1,17 @@
+-- drop and create database
 DROP DATABASE IF EXISTS employee_tracker_db;
 CREATE DATABASE employee_tracker_db;
 
+-- use database
 USE employee_tracker_db;
 
+-- table templates
 CREATE TABLE department (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(30)
+    dept_name VARCHAR(30)
 );
 
-CREATE TABLE role (
+CREATE TABLE roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(30),
     salary DECIMAL,
@@ -25,6 +28,6 @@ CREATE TABLE employees (
     role_id INT,
     manager_id INT REFERENCES employees(id),
     FOREIGN KEY (role_id)
-    REFERENCES role(id)
+    REFERENCES roles(id)
     ON DELETE SET NULL
 );
