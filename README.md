@@ -24,7 +24,7 @@ Please also update your own mysql password into the connection.js. And in termin
 Then exit out of mysql and run `node index.js`
 
 ## Usage
-Sample video link:
+Sample video link: https://drive.google.com/file/d/1AaWaw2_BLd75oHd5CFyB73J5_AyqVPRE/view
 
 ![Sample terminal](./images/m12-screenshot.png)
 
