@@ -3,6 +3,7 @@ const mysql = require('mysql2');
 const cTable = require('console.table');
 const db = require('./db/connection');
 
+// for connecting to database
 db.connect(err => {
     err ? console.log(err) : console.log(`Successfully connected to database`);
     employee_tracker()
@@ -18,24 +19,28 @@ const employee_tracker = () => {
         }]
     ).then((answers) => {
         if (answers.main === "View all Departments") {
+            // calling all department from database
             db.query(`SELECT * FROM department`, (err, result) => {
                 if(err) throw err;
                 console.table(result);
                 employee_tracker();
             });
         } else if (answers.main === "View all Roles") {
+            // calling all roles from database
             db.query(`SELECT * FROM roles`, (err, result) => {
                 if(err) throw err;
                 console.table(result);
                 employee_tracker();
             });
         } else if (answers.main === "View all Employees") {
+            // calling employees table from database
             db.query(`SELECT * FROM employees`, (err, result) => {
                 if(err) throw err;
                 console.table(result);
                 employee_tracker();
             });
         } else if (answers.main === "Add a Department") {
+            // just need to ask user what the new department name is
             inquirer.prompt([{
                 type: 'input',
                 name: 'dept',
@@ -56,6 +61,7 @@ const employee_tracker = () => {
                 });
             })
         } else if (answers.main === "Add a Role") {
+            // calling all available information from department
             db.query(`SELECT * FROM department`, (err, response) => {
                 if (err) throw err;
                 let deptArray = [];
@@ -94,6 +100,7 @@ const employee_tracker = () => {
                         choices: deptArray
                     }
                 ]).then((answers) => {
+                    // inserting new role
                     db.query(`INSERT INTO roles (title, salary, department_id) VALUES (?, ?, (SELECT id FROM department WHERE dept_name = ?))`, [answers.role_title, answers.salary, answers.department], (err, result) => {
                         if (err) throw err;
                         console.log(`Successfully added new role`);
@@ -102,6 +109,7 @@ const employee_tracker = () => {
                 });   
             });
         } else if (answers.main === "Add an Employee") {
+            // calling all available titles
             db.query(`SELECT title FROM roles`, (err, response) => {
                 if (err) throw err;
                 let roleArray = [];
@@ -140,6 +148,7 @@ const employee_tracker = () => {
                         choices: roleArray
                     }
                 ]).then((answers) => {
+                    // need another query for adding manager to new employee
                     const newEmp = [answers.firstName, answers.lastName, answers.role];
                     db.query(`SELECT * FROM employees`, (err, data) => {
                         if (err) throw err;
@@ -163,8 +172,59 @@ const employee_tracker = () => {
                 });   
             });
         } else if (answers.main === "Update an Employee Role") {
+            // calling all employees and roles currently in the system
+            let empsql =  `SELECT * FROM employees`;
+            db.query(empsql, (err, response) => {
+                if (err) throw err;
+                let empNameList = [];
+                response.forEach((employees) => {empNameList.push(`${employees.first_name}`);});
 
+                let rolesql = `SELECT * FROM roles`;
+                db.query(rolesql, (err, response) => {
+                    if (err) throw err;
+                    let rolesList = [];
+                    response.forEach((roles) => {rolesList.push(`${roles.title}`);});
+
+                    inquirer.prompt([
+                        {
+                            type: 'list',
+                            name: 'employee',
+                            message: 'Which employee do you wish to update?',
+                            choices: empNameList
+                        },
+                        {
+                            type: 'list',
+                            name: 'newrole',
+                            message: 'What is this employees new role?',
+                            choices: rolesList
+                        }
+                    ]).then((answers) => {
+                        // need to get the values for sql
+                        let newEmpTitle = `SELECT id FROM roles WHERE title = ${answers.newrole}`;
+                        let empID = `${answers.employee}`;
+                        response.forEach((roles) => {
+                            if (answers.newrole === roles.title) {
+                                newEmpTitle = roles.id;
+                            }
+                        });
+                        response.forEach((employees) => {
+                            if (answers.employee === employees.first_name) {
+                                empID = employees.id;
+                            }
+                        });
+
+                        // update employees table
+                        let updatesql = `UPDATE employees SET employees.role_id = ? WHERE employees.first_name = ?`;
+                        db.query(updatesql, [newEmpTitle, empID], (err) => {
+                            if (err) throw err;
+                            console.log("Successfully updated employee role.")
+                            employee_tracker();
+                        });
+                    });
+                });
+            });
         } else if (answers.main === "Exit") {
+            // quit application
             db.end();
             console.log("See you later~");
         }
